@@ -22,6 +22,7 @@ export class ActorComponent implements OnInit {
       }
       ngOnInit() 
       {
+        
     	   this.servicio.getActor(this.page).subscribe(list=>this.listado= list); 
       }
       pageChanged($event )
