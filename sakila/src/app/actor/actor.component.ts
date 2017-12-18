@@ -22,7 +22,7 @@ export class ActorComponent implements OnInit {
       }
       ngOnInit() 
       {
-        
+
     	   this.servicio.getActor(this.page).subscribe(list=>this.listado= list); 
       }
       pageChanged($event )
@@ -32,8 +32,9 @@ export class ActorComponent implements OnInit {
       }
       loadRelatedList(actorid )
       { 
-      	//this.onSelectedActor.emit(actorid); 
+      	
         this.relatedfilm.loadFilms(actorid); 
+
       }
 
 }
