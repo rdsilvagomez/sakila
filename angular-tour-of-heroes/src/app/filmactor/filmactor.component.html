@@ -1,0 +1,18 @@
+ 
+ <table *ngIf="listado" class="table  table-striped table-sm">
+ <thead>
+<th>First Name </th>
+<th>Last  Name </th>
+<th>Title </th>
+<th>Description </th>
+
+ </thead>
+
+ <tr *ngFor="let rec   of listado.data" scope="row">
+ <td> {{rec.actor.first_name}} </td>
+ <td> {{rec.actor.last_name}} </td>
+ <td> {{rec.film.title}} </td>
+  <td> {{rec.film.description}} </td>
+ </tr>
+ </table>
+

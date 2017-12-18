@@ -1,0 +1,12 @@
+<!--The content below is only a placeholder and can be replaced.-->
+<div style="text-align:center">
+  <h1>
+  Actor Catalog Information
+  </h1>
+ <!--<app-addbanner [ads]="ads"></app-addbanner>-->
+<p [appHighlight]="'yellow'">Highlighted in yellow</p>
+ <p appHighlight > rest </p>
+  <app-actor (onSelectedActor)="onSelectedActorParent($event)"></app-actor>
+  <app-filmactor #relatedFilms></app-filmactor>
+</div>
+ 

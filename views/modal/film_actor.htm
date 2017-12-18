@@ -1,0 +1,102 @@
+ 
+
+<div class="modal fade" id="mdlfilmactor" role ="dialog">
+<div class="modal-dialog modal-sm">
+<div class="modal-content"> 
+<div class="modal-header"><h2>Create New User</h2></div>
+<div class="modal-body">
+	
+<form class="form-horizontal">
+
+<div class="form-group"> 
+<label class="control-label col-sm-2">Name</label>
+<div  class="col-sm-10">
+
+<input type="text" class="form-control"></input>
+
+</div>
+</div>
+ <div class="form-group"> 
+<label class="control-label col-sm-2">Last Name</label>
+<div  class="col-sm-10">
+
+<input type="text" class="form-control"></input>
+
+</div>
+</div>
+
+</form>
+
+</div>
+<div class="modal-footer">
+	<button class="btn btn-success" ng-click="filterFilmActors()">Save</button>
+
+</div>
+</div>
+ </div>
+
+</div>
+
+
+<div class="modal fade" id="mdlActorDetail" role="dialog">
+    <div class="modal-dialog modal-md">
+      <div class="modal-content">
+        <div class="modal-header">
+	  <button type="button" class="close" data-dismiss="modal"> </button> 
+          <h4 class="modal-title">Film Actor</h4>
+        </div>
+        <div class="modal-body" >
+          
+<div  class="panel panel-default">
+
+<div class="panel-heading">
+	
+<form class="form-inline">
+<div class="form-group"> 
+<label>Film </label>
+<input type="text" class="form-control" ng-model="$parent.fltrFilm"></input>
+</div>
+<div class="form-group">
+<label>Actor </label>
+<input type="text" class="form-control" ng-model="$parent.fltrActor"></input>
+
+</div>
+<button class="button btn-success" ng-click="filterFilmActors()">Filter </button>
+
+</form>
+
+
+</div>
+
+<div class="panel-body" style="height: 600px; overflow: auto;">
+	
+	<table class="table table-bordered">
+          	
+			<th>Actor Id</th>
+			<th>Film Id</th>
+			<th>Last Update</th>
+          	<tr ng-repeat=" x in filmactoritems" class="info">
+
+          	<td>{{x.actor_id}}</td>
+          	<td>{{x.film_id}}</td>
+          	<td>{{x.last_update}}</td>
+          	</tr>
+          </table>
+          
+
+</div>
+<div class="panel-footer">
+</div>
+<ul uib-pagination total-items="filmactortotal" num-pages="filmactornumpages" ng-model="$parent.filmactorcurrentPage" ng-change="filterFilmActors()" items-per-page="20" max-size= "10">
+          </ul>
+ </div> 
+          
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
