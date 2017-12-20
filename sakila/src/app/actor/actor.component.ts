@@ -28,7 +28,7 @@ export class ActorComponent implements OnInit {
       pageChanged($event )
       {
          this.servicio.getActor(this.page).subscribe(list=>this.listado= list); 	
-         this.catService.getCategories().subscribe(list=>this.listadoCategories= list ); 
+        //// this.catService.getCategories().subscribe(list=>this.listadoCategories= list ); 
       }
       loadRelatedList(actorid )
       { 
