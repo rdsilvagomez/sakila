@@ -1,0 +1,696 @@
+
+Learning	Domain	4	– Application	Automation
+=====================
+Properties
+=====================
+*** Create and use Application	Properties.***
+Create.
+   System Applications > Studio
+   System Property Category
+Get Property.
+   gs.getProperty('name1.propertyname')
+
+system_properties.do?sysparm_title=&sysparm_category=
+   
+     gs.getProperty('pop1','return this if pop1 has no value'); 
+
+==================
+*** WorkFlows ***
+==================
+When to Use?
+* Appprovals 
+* SLAs
+* Work needs to stop until a condition is met
+* Need to create a task
+* Need to run a script in the middle of a process
+* Event generation
+* Email notification
+
+Multistep, not continuing action.
+
+What causes workflow to execute?
+* Service catalog items.
+* Service Level agreement.
+* Task (Based on condition within the record or called by UI Action)
+* Scripts (Business Rules, Scripts Includes)
+
+Check Out and Edit Workflows.
+* Changes to a workflow are not put into runtime until the workflow is published.
+* To allow testing, changes to a workflow execute only for the user who checked out the workflow.
+* Only workflows in the current scope can be checked out. All other Workflows are read only.
+
+/************/
+Context.
+
+* Every workflow has its own runtime environment called a contexts
+* The context runs the Workflow definition at the time the workflow was launched.
+(Workflow->Live Workflows)
+
+**Active context: A list of running context.
+**All contexts: A list of running , finished , and canceled contexts.
+**Executing Activities : A list of activities that are executing.
+
+
+
+***Show workflow link***
+|*|Blue  = Completed  |*| Green  = Running |*| Red    = Error |*| Orange = Cancelled |*| Yellow = timed out|*|
+/************/
+
+*New workflows are automatically checked out to the creator.
+
+*Max activity count. The maximun number of permitted Activities to prevent infinite loops.
+*Run after bus. rules run: Runs or not after applicable BR, always checked when workflows generates approvals.Because the approval might 
+be related with the current record.
+
+* A version is the published workflow in the runtime environment. There can only be one published version of a workflow at a time. Past versions are 
+kept as unpublished so there is a historical record.
+
+*The workflow object logging methods write to the workflow context log section: 
+--workflow.info 
+--workflow.debug(must be enabled  --> Workflow --> Administration -->Properties  Select Log workflow debug messages)
+--workflow.warn
+--workflow.error
+
+
+====================================
+*****Scheduled Script execution*****
+====================================
+Jobs execute on server time an not on local time. Use /*System Diagnostics ==> stats*/ to see the server time.
+
+gs.info
+System Logs ==> System Logs ==> Script Log Statements.
+
+What is running when ?
+Today : System Scheduler --> Scheduled Jobs --> Today's Scheduled Jobs 
+
+Everything on the schedule : System Scheduler --> Scheduled Jobs -->Scheduled Jobs
+Overdue scheduled jobs are shown in red.
+
+====================================
+*****Events*****
+====================================
+Commonly generated in BR or workflow scripts
+
+Studio ---> Create Event 
+
+In Workflow there is an activity called (Create Event Activity)
+The record that triggered the workflow is automatically passed 
+
+*Generating and Event -Script
+gs.eventQueue("<event_name>",current,parm1,parm2);  
+
+*Checking for Events.
+System Logs ==> Events 
+
+*Responding to Events.
+*Email
+*Script Actions.
+Email notifications do not require events; they can also be triggered by insertions or updates.
+
+==========================================
+***********Outbound Email****************
+=========================================
+In response of: Record inser or update, Event generation
+The notification workflow activity can also be used to send email.
+
+
+*Email notification trigger.
+*Notification Weight.
+ When multiple Notifications are simultaneosly triggered for the same record and address to the same recipients, the Weight field value is used to 
+ determine wich Email Notification(s) to send and which to skip.
+ * Notifications with Weight value of zero are always sent.
+ * If multiple notifications have the same non-zero weight value and that value is the highests , all notifications with that value are sent.
+
+
+ *Exclude delegates: Prevent email notification from being sent to User delegates.
+ *Send to Event Creatros: Applies only to event based notifications.
+ *Subscribable: Users who are subscribed to the current record will also automatically receive the email.
+
+
+*What It will contain? 
+${<field name>}
+dot walking
+${<field name containing related record>.<field name>}
+To reference parameters 
+${event.parm1} ${event.parm2}
+
+*Email template fields are overwritten by content contained in a notification.
+*Omit watermark: Select to remove the watermark containing the triggering record reference. This is not recommended.
+*Maximun notification size including attachment is 26 MB.
+
+*Adding Links to a Message. 
+${URI}       Record Link
+${URI_REF}   Record Display Link
+${<reference_field_name>.URI}
+${<reference_field_name>.URI_REF}
+
+
+*Receiving Email - Configuration.
+** The (notification) field on the User records determines if users receive email notification.
+
+*Script Actions 
+Respond to events. 
+2 Objects 
+-current
+-event object
+
+var output= ''; 
+for (property in event)
+{
+ output += property +':'+event[property]+',';
+}
+gs.info(output); 
+
+/*<mail_script></mail_script>*/
+*Print values to the email with the template.print() method.
+
+System Policy==> Notification Email Scripts.
+
+${mail_script:mail_script_name}
+
+If you manually enter a mail script bounded by <mail_script> and </mail_script> in the body of a new or converted email notification or template, and then attempt to save the record, a message asks whether the mail script should be converted. In many cases, an unconverted mail script fails to run from inside the HTML editor. If you select Yes, the script is added to the Email Script [sys_script_email] table and is automatically replaced in the body with an embedded script tag (${mail_script:script_name}).
+
+
+
+
+
+==========================================
+***********Script Include****************
+=========================================
+-Reusable server-side JavaScript
+-Library of functions.
+-Not executed unless called.
+
+*Protection Policy
+Protection policy is applied when an application is downloaded from the Servicenow App Store.
+Can be read only or not displayed.
+
+Use protection Policies to protect intellectual property by preventing modification or hiding Script Include Logic.
+
+*Script include name must match class name.
+
+/*Create class*/
+var test = Class.create(); 
+/*Prototype definition*/
+test.prototype= {
+	initialize:function(){},
+	type:'test'
+
+};
+
+
+==========================================
+***********Import and Integrate***********
+==========================================
+Process of Importing 
+1) Load Data.
+2) Create Transform Map.
+3) Run Transform.
+
+System Import Sets --> Load data.
+
+*Create Transform Map.
+*Run business rules: Select to run business rules, workflows, approval engines, auditing, and field normalization
+while the transformation inserts or updates data into the target table.
+
+*Auto map matching fields.
+*Mapping assist Link.
+
+*Coalesce. 
+The coalesce option makes a field a record's unique key.
+**If a match is found using the coalesce field, the existing record will be updated with the information being imported.
+**If not it will be inserted.
+
+*Inbound Integration
+*Scripted Rest Api
+*Scripted Rest Resource 
+*request / response methods.
+
+global.JSON().decode(response.getBody());
+sn_ws.RestMessageV2()
+
+*sn_ws.SOAPMessageV2  for SOAP web services
+/*
+ var s = new sn_ws.SOAPMessageV2('x_139221_sakila.Calculator', 'CalculatorSoap.Add');
+        s.setStringParameter("intA","1"); 
+        s.setStringParameter("intB","2"); 
+        var response = s.execute();
+        var responseBody = response.getBody(); 
+        var status = response.getStatusCode();
+       
+        var xmlDoc = new XMLDocument2(); 
+        xmlDoc.parseXML(responseBody); 
+        var node = xmlDoc.getNode('//AddResult');
+        gs.info(node.getFirstChild());
+
+
+*/
+=====================================
+/*Consuming Scripted Rest Service*/
+=====================================
+var request = new sn_ws.RESTMessageV2();
+request.setEndpoint('https://dev27668.service-now.com/api/x_139221_sakila/v1/filmlist');
+request.setHttpMethod('GET');
+
+
+var user = 'admin';
+var password = 'admin';
+
+request.setBasicAuth(user,password);
+request.setRequestHeader("Accept","application/json");
+
+var response = request.execute();
+gs.info(response.getBody());
+
+=====================================
+/*** Consuming Scripted REST POST***/
+=====================================
+var request = new sn_ws.RESTMessageV2();
+request.setEndpoint('https://dev27668.service-now.com/api/x_139221_sakila/v1/filmlist');
+request.setHttpMethod('POST');
+ 
+var objecto_envio ={};
+objecto_envio.test_1="test 1"; 
+objecto_envio.test_2="test 2"; 
+var test = new global.JSON().encode(objecto_envio);
+request.setRequestBody(test );
+
+
+var response = request.execute();
+gs.info(response.getBody());
+
+/*On the server side*/
+/**return [{"wef":request.body.data}];**/
+RESTAPIRequest
+
+*Web Service Access Only
+Web service Access only prevents users from logging into the ServiceNow User Interface.
+
+*Integrate to a servicenow instance table.
+*ServiceNow tables can be Web Service providers.
+"Allow access to this table via web services" property
+
+
+========================
+***Controlling Access***
+========================
+Access can be restricted:
+*Application Menus
+*Modules
+*Records 
+*Fields
+
+Navigation  ===> Application Menu
+Navigation  ===> Modules
+
+Record and field Permissions require security_admin role.
+
+Opening Access Controls
+
+Select Configure==> Security Rules.
+
+===============
+*ROW vs FIELDS*
+===============
+
+* table.None applies to a table's records.
+* table.* applies to every field on a record where there is no field-specific ACL
+* table.field applies to only one field on a record
+
+If access is denied to a row, no field level rules can grant access.
+If access to a row is allowed but the field is denied, the field is not visible
+If access to a row is allowed and access to a field is allowed, the field is visible
+
+
+===================
+*WORKING WITH NONE*
+===================
+*table.NONE read ACK for admin and itil roles
+*table.u_field_3 read ACL for admin
+Result: table.u_field_3 is read only by admin.
+
+===================
+*WORKING WITH  *  *
+===================
+*table.NONE read ACL for admin and ITIL roles.
+*table.* read ACL for admin.
+*table.u_field_3 read ACL for itil
+
+The table.NONE read ACL gives read access to the records in the table to users with either the admin or itil roles.
+
+The table.* read ACL for admin gives read access to all fields for admin and excludes users with all other roles.
+
+The table.u_field_3 read ACL gives access to u_field_3 to itil
+
+Read access to u_field_3 is denied to all users except those with the admin or itil roles
+
+
+======================
+**TO * or NOT to *?***
+======================
+* table.None read ACL for admin and itil roles
+* table.u_field_3 read ACL for admin
+Admin can see every column, itil can see every row except u_field_3
+To easily exclude fields, use a * ACL
+To easily inclide fields, do NOT use a * ACL.
+
+===================================
+** Access Control Configuration****
+===================================
+Allow access if all the following are true
+1) Condition field evaluates to true
+2) Script fields return true.
+3) The user has one of the required roles.
+
+====================================
+** Access Control Search Order *****
+====================================
+1) Explicit rule on self.                   incident.number
+2) Explicit rule on field in parent.        task.number
+3) Until parend does not contain field.     *.number
+4) WildCard rule on self                    incident.*
+5) WildCard rule on field in parent.        task.*
+6) Until parend does not contain field.      *.*
+
+
+*System Security==> Debugging ==> Debug Security Rules
+Color code: 
+Green = Passed
+Red   = Failed
+Blue  = used previously cached result
+Gray = Skipped because of a Access Control higher in the hierarchy
+
+=================================
+/*CLient Scripting  API-Security*/
+=================================
+*g_user properties
+----userName
+----userID
+----firstName
+----lastName
+*g_user Methods
+----getFullName()
+----hasRole()
+----hasRoleExactly()
+----hasRoleFromList()
+----hasRoles()
+
+
+*g_form Methods 
+-setDisplay() 
+-setVisible()
+-setDisabled()
+-setMandatory()
+-setReadOnly()
+
+/*Server-Side Scripting API -Security*/
+-gs.getuser()
+-gs.getUserDisplayName()
+-gs.getUserNameByUserID()
+-gs.userID()
+-gs.hasRole()
+-gs.hasRoleInGroup()
+
+Controlling access through GlideSystem methods, which executes server-side, are a better choice than client-side scripting
+strategies from performance and security perpectives.
+         
+
+/*Allow configuration*/
+Permit other application scopes to create artifact for an application.
+-Dictionary Entry.
+-UI Action on the table.
+-Client Script on the table.
+
+
+
+
+
+/*Protection policies*/        
+Protections policies can be applied to: 
+**UI Actions
+**Script Includes.
+The protections Policy options are:
+None: Logic is viewable and editable
+Read-Only: logic is viewable but not editable.
+Protected: logic is not viewable
+
+
+
+
+/*Application Access*/
+*Accesible From 
+Application Access does not apply to scripts executed in the Global scope.
+
+The Application Access Setting for a table are: 
+*All aplication scopes.
+*This application scope only.
+
+
+
+================
+Service Catalog
+================
+Categorical listing of things that can be ordered or requested.
+
+*Outcomes
+***Record Producer
+***Catalog Item
+
+*The record producer form can include graphics, html, and help.
+
+/*Creating a record producer*/
+1) Data Model --> Tables --><table>
+2) Add to Service Catalog (Related Link)
+Configuring Record Producer.
+Setting Name, Short Description and "Catalog Category".
+
+[sc_cat_item_record_producer]
+
+/*Create category*/
+*Studio --> Create Category
+
+
+Adding a Category to the Service Catalog
+*Self Service --> Service Catalog
+*Add Categories 
+
+/**Scripting a record producer (Script field)**/
+* Server side script that executes after a record producer is submitted and before the record is written to the database.
+* Access fields from a record producer using the producer (producer.myField1)
+* The current object is the record that will be written
+* Record Producer Variables map to fields on current
+
+
+/*Catalog Client Script.*/
+Use client-side scripting to enhace the user experience with Record Producer forms.
+
+/*Linking a Module to a Service Catalog Item*/
+*Link type= URL
+*Call the Record Producer by sys_id in the URL
+*com.glideapp.servicecatalog_cat_item_view.do?v=1&sysparm_id=<sys_id>
+
+Where do you want to go next?
+producer.redirect = "catalog_home.do"
+The redirect script is automatically created when you create a Record Producer with the "Add to Service Catalog" Related List.
+
+/*Mobile Service Catalog*/
+Procedure for adding categories to mobile.
+*Service Catalog --> Mobile Admin--> Mobile Layout
+*Availability Desktop And Mobile
+
+
+=========================
+*Homepages and reports.**
+=========================
+Different users want to see different information different ways. 
+--Homepages
+--Reports
+*What is a Homepage? 
+---Page that appears when users log in.
+--Servicenow homepage options: 
+----Every user sees the same page.
+----Users select from a choice list of homepages.
+----Users create and use their own homepage.
+
+if glide.login.home property is set all users land on the same form rather than their homepage.
+
+/*portal page table   sys_portal_page*/
+
+* Reports can only be created for audited tables. To make a table auditable, edit the table's Dictionary record and select the Audit option.
+
+* To save the report as a snapshot, select the Save > Publish option. Publishing provides a URL that anyone can use to access the report.
+
+* Scheduled Email of Report File. Calendar report do not work with scheduled.
+
+*Reports can be added to dashboard. Add dashboard option in the report , select the hompepage and the position. 
+
+
+
+
+
+
+
+
+
+
+
+/*Application development*/
+https://docs.servicenow.com/bundle/kingston-application-development/page/build/custom-application/reference/r_CustomApplicationDevelopment.html
+
+/*Mobile Views pendientes*/
+
+
+
+ ===============================
+/*Application creation overview*/
+ ===============================
+ 1) store.servicenow.com
+ 2) share.servicenow.com
+
+ Should I Build it?
+ *Data can be modeled in a relational database.
+ *Expensive use of forms to interact with data.
+ *Require reporting capability
+ *Need workflow to manage processes
+ *Can extend existing functionality through Javascript
+
+ /*Creating and Application and Modules*/
+System Application==> Studio
+
+*Start from Global Creates a global application
+Option available when glide.app.creator.global =true
+
+*Start from Scrath 
+Only name and scope is required. 
+*The scope is constructe by :
+x_+<glide.appcreator.company.code.system property>+ Application Name(first 12 characters)
+
+*Create Custom Application
+Some configuration completed before application created.
+
+*Start from Service.
+With start from service, yo can convert an existing service to an application if 
+service creator is active.
+
+*Not all changes to an instance should be part of ann application:
+Configuration on forms/list for tables not in the application.
+Scripts for tables not in the application
+System properties values
+
+
+*In the baseline case, custom applications have read access to each other's table records but cannot perform any other database operation.
+
+*Out of Scope Records.
+Servicenow warns a developer when working with out- of scope artifacts.
+
+*Servicenow Scopes
+All applications have scope.
+-Global
+-Privately Scoped
+
+Is not posible to change any application's scope.
+
+*Linking to Git.
+***Source control--> Ling to Source Control.
+[sys_mod_count] A numeric field wich counts the number of updates for this record 
+since recpoer creation.
+
+
+*Application Access.
+Provides runtime protection for application tables agains read/write/create/delete operations: 
+**Scripts
+**Web Service calls
+
+What's in a New Application.
+The menu was creaed when the applcaiton was created, bt is not displayed unless a module exists.
+
+Viewing Modules.
+*Zero or one modules are created when an application table is created.
+*Application developer must create additional modules.
+
+By default the module's name will be the plural form of the table's name. 
+For example if the applicaton 
+Navigation --> Module 
+
+Use Link type of Separator to add horizontal separator lines to the application navigator.
+
+*Anatomy of the Mobile UI
+The mobile UI consist of: 
+-Application Navigator.
+-User Profile.
+-Favorites.
+
+Servicenow Mobile App special fields
+Barcode.
+Geolocalization
+Create a field of "string" type with attributes barcode=true ir current_location=true
+
+*Duplicating a desktop module.
+**Navigation---> Modules-->Module you want to copy.
+**New Mobile Module.
+*Creating Mobile Application Modules.
+**new Module(Mobile)
+
+glide.ui.mobile_agents fefines which devices are treated as mobile.
+
+*Right-click in the new field and select "configure label"
+*Enter the mouse over text in the Hint field.
+
+Provide Real Time Feedback.
+g_form.showFieldMsg()
+g_form.addInfoMessage()
+g_form.addErrorMessage()
+
+*Style Fields
+new Style --> Configure Table and Field name.
+
+
+*In tabbed mode users do not see all of the fields all the time
+
+*Views.
+*Annotation types are:
+*Info Box Blue
+*Info Box Red.
+*Line Separator
+*Section Details
+*Section Separator
+*Text
+*System UI --> Forms to delete views
+
+*System Mobile UI > Table Titles
+Mobile List Layout creation
+
+*The UI Policy form is part of the Global applicaton. 
+To add the Run scripts in UI type field to the UI Policy form , switch to
+the Global Scope.
+
+*g_scratchpad can be passed from the display rule.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ /*Creating and Configuring Application Forms*/
+
+
+
+
