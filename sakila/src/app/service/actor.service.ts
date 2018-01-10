@@ -15,6 +15,6 @@ export class ActorService {
 			return this.http.get('../../web/index.php/actor/list?page='+page)
 			               .map(response => response  as listadoActor);
 
-
+/*test servicio*/
 		}
 }
